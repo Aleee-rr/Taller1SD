@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ==========================================
+# Normas de seguridad Taller 1 (Obligatorio)
+# ==========================================
+*.pem
+*.key
+.ssh/
