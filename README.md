@@ -1,2 +1,16 @@
 # Taller1SD
-Taller 1: Coordinación y datos del sistema - Ingeniería en Telemática.
+
+# Taller 1: Coordinación y Datos del Sistema:
+**Asignatura:** Sistemas Distribuidos  
+**Programa:** Ingeniería en Telemática - Universidad Distrital Francisco José de Caldas  
+**Docente:** Msc. Ing. Óscar Gabriel Espejo Mojica  
+
+---
+
+## Integrantes del Grupo:
+
+| Johan Sebastián López Barrera | [20262678088] | Red y Replicación de Datos |
+| [2] | [Código] | Algoritmos de Coordinación |
+| [3] | [Código] | Control de Concurrencia |
+| [4] | [Código] | Pruebas de Partición |
+| [Edy Alexandra Izquierdo Rodríguez] | [20262678092] | Análisis CAP y Documentación 
