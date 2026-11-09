@@ -12,5 +12,5 @@
 | Johan Sebastián López Barrera | [20262678088] | Red y Replicación de Datos |
 | [2] | [Código] | Algoritmos de Coordinación |
 | [3] | [Código] | Control de Concurrencia |
-| [4] | [Código] | Pruebas de Partición |
+| Cristhopher Malagon Gonzalez | [20262678035] | Pruebas de Partición |
 | [Edy Alexandra Izquierdo Rodríguez] | [20262678092] | Análisis CAP y Documentación 
