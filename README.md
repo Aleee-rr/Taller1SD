@@ -138,7 +138,7 @@ mongosh --quiet --eval 'rs.status()'
 bash scripts/conflictos.sh metrics
 ```
 
-Para generar propuestas tentativas y reconciliarlas, consultar [docs/CONFLICTOS.md](docs/CONFLICTOS.md). Para detalles de despliegue y seguridad del lease, consultar [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) y [docs/SPLIT_BRAIN.md](docs/SPLIT_BRAIN.md).
+La documentación del proyecto está organizada en dos etapas: [Etapa 1: instalación y conexión de nodos](docs/01-etapa-1-infraestructura/) y [Etapa 2: ejecución del proyecto](docs/02-etapa-2-ejecucion/Taller1_Etapa2_Ejecucion_Proyecto.docx).
 
 ## 6. Experimentos ejecutados y resultados
 
@@ -216,9 +216,11 @@ tests/
   test_bully.py
   test_conflictos.py
 docs/
-  DESPLIEGUE.md
-  SPLIT_BRAIN.md
-  CONFLICTOS.md
+  01-etapa-1-infraestructura/
+    Guia_Instalacion_Nodos.docx
+    Guia_Conexion_Nodos.docx
+  02-etapa-2-ejecucion/
+    Taller1_Etapa2_Ejecucion_Proyecto.docx
 evidencias/
   01-configuracion-infraestructura/
   02-ejecucion-taller-1/
