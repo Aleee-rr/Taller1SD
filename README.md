@@ -26,9 +26,9 @@ Este laboratorio implementa una capa distribuida de **coordinación e inventario
 | Johan Sebastián López Barrera | 20262678088 | Red y replicación de datos |
 | Cristhopher Malagon Gonzalez | 20262678035 | Pruebas de partición |
 | Edy Alexandra Izquierdo Rodríguez | 20262678092 | Análisis CAP y documentación |
-| **Pendiente de completar** | **Pendiente** | **Confirmar responsable y distribución de coordinación y concurrencia** |
+| Camilo Alejandro Contreras Morales | 20262678038 | Liderazgo técnico, arquitectura, desarrollo e integración del sistema distribuido |
 
-> Antes de entregar, confirmar el cuarto integrante, los códigos y la distribución definitiva de responsabilidades. El enunciado plantea equipos de cuatro estudiantes.
+
 
 ## 3. Arquitectura e infraestructura
 
