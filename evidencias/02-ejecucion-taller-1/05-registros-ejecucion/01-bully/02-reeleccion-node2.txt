@@ -1,0 +1,24 @@
+========== REELECCION BULLY ==========
+Wed Nov 11 10:21:09 AM UTC 2026
+========== NODE 1 ==========
+{
+  "type": "STATUS",
+  "from": 1,
+  "epoch": 3,
+  "lamport": 5755,
+  "state": "SEGUIDOR",
+  "leader": 2,
+  "assignments": [],
+  "can_assign": false
+}
+========== NODE 2 ==========
+{
+  "type": "STATUS",
+  "from": 2,
+  "epoch": 3,
+  "lamport": 5756,
+  "state": "LIDER",
+  "leader": 2,
+  "assignments": [],
+  "can_assign": true
+}

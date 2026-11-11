@@ -1,0 +1,54 @@
+test_eleccion_caida_y_regreso (test_bully.TestBully.test_eleccion_caida_y_regreso) ... 11:01:15 [nodo 3 | CANDIDATO | epoch=0] INICIO ELECCION BULLY
+11:01:15 [nodo 3 | LIDER | epoch=1] GANÉ LA ELECCIÓN: lease w=majority confirmado
+11:01:15 [nodo 1 | SEGUIDOR | epoch=1] ACEPTO coordinador 3 (epoch 1)
+11:01:15 [nodo 3 | LIDER | epoch=1] nodo 1 RESPONDE
+11:01:15 [nodo 2 | SEGUIDOR | epoch=1] ACEPTO coordinador 3 (epoch 1)
+11:01:15 [nodo 3 | LIDER | epoch=1] nodo 2 RESPONDE
+11:01:16 [nodo 2 | CANDIDATO | epoch=1] INICIO ELECCION BULLY
+11:01:16 [nodo 2 | CANDIDATO | epoch=1] nodo 3 NO RESPONDE
+11:01:16 [nodo 1 | CANDIDATO | epoch=1] INICIO ELECCION BULLY
+11:01:16 [nodo 2 | CANDIDATO | epoch=1] INICIO ELECCION BULLY
+11:01:16 [nodo 1 | CANDIDATO | epoch=1] nodo 2 RESPONDE
+11:01:16 [nodo 1 | CANDIDATO | epoch=1] nodo 3 NO RESPONDE
+11:01:16 [nodo 1 | CANDIDATO | epoch=1] Hay nodo de mayor ID; espero anuncio valido
+11:01:17 [nodo 2 | CANDIDATO | epoch=1] INICIO ELECCION BULLY
+11:01:17 [nodo 2 | LIDER | epoch=2] GANÉ LA ELECCIÓN: lease w=majority confirmado
+11:01:17 [nodo 1 | SEGUIDOR | epoch=2] ACEPTO coordinador 2 (epoch 2)
+11:01:17 [nodo 2 | LIDER | epoch=2] nodo 1 RESPONDE
+11:01:17 [nodo 3 | CANDIDATO | epoch=0] INICIO ELECCION BULLY
+11:01:17 [nodo 3 | CANDIDATO | epoch=0] Solicitando cesion al nodo 2 de ID menor
+11:01:17 [nodo 2 | LIDER | epoch=2] nodo 3 RESPONDE
+11:01:17 [nodo 2 | SEGUIDOR | epoch=2] DEJO DE SER LIDER: reaparecio un nodo de mayor ID
+11:01:17 [nodo 3 | CANDIDATO | epoch=0] nodo 2 RESPONDE
+11:01:17 [nodo 2 | CANDIDATO | epoch=2] INICIO ELECCION BULLY
+11:01:17 [nodo 3 | CANDIDATO | epoch=0] INICIO ELECCION BULLY
+11:01:17 [nodo 3 | LIDER | epoch=3] GANÉ LA ELECCIÓN: lease w=majority confirmado
+11:01:17 [nodo 1 | SEGUIDOR | epoch=3] ACEPTO coordinador 3 (epoch 3)
+11:01:17 [nodo 2 | CANDIDATO | epoch=2] Hay nodo de mayor ID; espero anuncio valido
+11:01:17 [nodo 3 | LIDER | epoch=3] nodo 1 RESPONDE
+11:01:17 [nodo 2 | SEGUIDOR | epoch=3] ACEPTO coordinador 3 (epoch 3)
+ok
+test_lease_caido_no_autoriza_asignacion (test_bully.TestBully.test_lease_caido_no_autoriza_asignacion) ... 11:01:20 [nodo 3 | CANDIDATO | epoch=0] INICIO ELECCION BULLY
+11:01:20 [nodo 3 | LIDER | epoch=1] GANÉ LA ELECCIÓN: lease w=majority confirmado
+11:01:20 [nodo 3 | LIDER | epoch=1] ASSIGN RECHAZADO: fencing
+11:01:20 [nodo 3 | SEGUIDOR | epoch=1] DEJO DE SER LIDER: perdio el fencing
+11:01:20 [nodo 3 | SEGUIDOR | epoch=1] nodo 1 NO RESPONDE
+11:01:20 [nodo 3 | SEGUIDOR | epoch=1] nodo 2 NO RESPONDE
+ok
+test_a_domina (test_conflictos.TestConflictos.test_a_domina) ... ok
+test_b_domina (test_conflictos.TestConflictos.test_b_domina) ... ok
+test_base_distinta_se_rechaza (test_conflictos.TestConflictos.test_base_distinta_se_rechaza) ... ok
+test_concurrencia (test_conflictos.TestConflictos.test_concurrencia) ... ok
+test_crear_propuesta_no_modifica_original (test_conflictos.TestConflictos.test_crear_propuesta_no_modifica_original) ... ok
+test_empate_gana_menor_id (test_conflictos.TestConflictos.test_empate_gana_menor_id) ... ok
+test_iguales (test_conflictos.TestConflictos.test_iguales) ... ok
+test_mayor_lamport (test_conflictos.TestConflictos.test_mayor_lamport) ... ok
+test_operaciones_duplicadas_se_rechazan (test_conflictos.TestConflictos.test_operaciones_duplicadas_se_rechazan) ... ok
+test_recurso_distinto_se_rechaza (test_conflictos.TestConflictos.test_recurso_distinto_se_rechaza) ... ok
+test_union (test_conflictos.TestConflictos.test_union) ... ok
+test_vector_invalido_se_rechaza (test_conflictos.TestConflictos.test_vector_invalido_se_rechaza) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 6.654s
+
+OK

@@ -1,0 +1,35 @@
+========== ELECCION INICIAL BULLY ==========
+Wed Nov 11 09:43:07 AM UTC 2026
+========== node1 ==========
+{
+  "type": "STATUS",
+  "from": 1,
+  "epoch": 2,
+  "lamport": 925,
+  "state": "SEGUIDOR",
+  "leader": 3,
+  "assignments": [],
+  "can_assign": false
+}
+========== node2 ==========
+{
+  "type": "STATUS",
+  "from": 2,
+  "epoch": 2,
+  "lamport": 926,
+  "state": "SEGUIDOR",
+  "leader": 3,
+  "assignments": [],
+  "can_assign": false
+}
+========== node3 ==========
+{
+  "type": "STATUS",
+  "from": 3,
+  "epoch": 2,
+  "lamport": 927,
+  "state": "LIDER",
+  "leader": 3,
+  "assignments": [],
+  "can_assign": true
+}

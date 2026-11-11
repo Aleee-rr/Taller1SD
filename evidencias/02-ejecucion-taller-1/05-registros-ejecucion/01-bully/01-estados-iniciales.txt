@@ -1,0 +1,33 @@
+===== node1 =====
+{
+  "type": "STATUS",
+  "from": 1,
+  "epoch": 1,
+  "lamport": 590,
+  "state": "SEGUIDOR",
+  "leader": 3,
+  "assignments": [],
+  "can_assign": false
+}
+===== node2 =====
+{
+  "type": "STATUS",
+  "from": 2,
+  "epoch": 1,
+  "lamport": 591,
+  "state": "SEGUIDOR",
+  "leader": 3,
+  "assignments": [],
+  "can_assign": false
+}
+===== node3 =====
+{
+  "type": "STATUS",
+  "from": 3,
+  "epoch": 1,
+  "lamport": 592,
+  "state": "LIDER",
+  "leader": 3,
+  "assignments": [],
+  "can_assign": true
+}
