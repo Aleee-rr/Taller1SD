@@ -225,3 +225,11 @@ __marimo__/
 *.pem
 *.key
 .ssh/
+
+# Local laboratory files
+.venv/
+__pycache__/
+logs/
+*.log
+id_ed25519*
+id_rsa*

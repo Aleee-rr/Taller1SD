@@ -46,7 +46,7 @@ class Nodo:
             manejador.setFormatter(formato)
             self.logger.addHandler(manejador)
             
-        uri = "mongodb://100.103.197.36:27017,100.101.27.99:27017,100.104.202.47:27017/?replicaSet=rs-inventario"
+        uri = os.environ.get("MONGO_URI", "mongodb://100.103.197.36:27017,100.109.167.107:27017,100.104.202.47:27017/?replicaSet=rs-inventario")
         try:
             self.mongo_client = MongoClient(uri, w="majority", serverSelectionTimeoutMS=2000)
             self.db = self.mongo_client["recursos_borde"]
