@@ -23,7 +23,7 @@ Este laboratorio implementa una capa distribuida de **coordinación e inventario
 
 | Integrante | Código | Responsabilidad registrada |
 |---|---|---|
-| Johan Sebastián López Barrera | 20262678088 | Red y replicación de datos |
+| Johan Sebastián López Barrera | 20262678088 | Red, entorno de máquinas virtuales y elección de coordinador |
 | Cristhopher Malagon Gonzalez | 20262678035 | Pruebas de partición |
 | Edy Alexandra Izquierdo Rodríguez | 20262678092 | Análisis CAP y documentación |
 | Cristian Velasco Delbasto | 20262678044 | Despliegue y configuración de MongoDB |
