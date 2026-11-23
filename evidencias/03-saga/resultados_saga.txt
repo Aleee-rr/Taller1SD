@@ -1,0 +1,28 @@
+FASE 5 - SAGA CON COMPENSACIONES
+Fecha: 23 de noviembre de 2026
+Nodo de ejecución: Node 3
+
+PRUEBA 1 - EJECUCION EXITOSA
+ID: 50b5d3c6-bad3-4075-b921-c0e94a2f8dc6
+Estado: COMPLETADA
+Reserva: CONFIRMADA
+Asignacion: ACTIVA
+Pasos: RESERVAR OK, REPLICAR OK, CONFIRMAR OK
+
+PRUEBA 2 - FALLA EN EL PASO 2
+ID: 562266cc-b5c6-4fa5-86cd-8917a02b26f1
+Estado: COMPENSADA
+Reserva: LIBERADA
+Asignacion: No creada
+Compensacion: Paso 1
+
+PRUEBA 3 - FALLA EN EL PASO 3
+ID: 06b5a490-77a4-42d3-9185-5c9f3e87197d
+Estado: COMPENSADA
+Reserva: LIBERADA
+Asignacion: ANULADA
+Compensaciones: Pasos 2 y 1
+
+RESULTADO:
+Las tres pruebas presentaron el comportamiento esperado.
+Los estados de las reservas y asignaciones fueron verificados en MongoDB.
