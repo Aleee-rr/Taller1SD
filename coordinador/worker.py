@@ -143,7 +143,7 @@ def correr(reloj):
                 if lease_vigente(d):
 
                     if not tags:
-                        for cola in ("allocations", "metrics"):
+                        for cola in ("allocations", "metrics", "failover"):
 
                             tags[cola] = canal.basic_consume(
                                 queue=cola,
