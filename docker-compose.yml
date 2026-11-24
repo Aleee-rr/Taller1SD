@@ -1,0 +1,47 @@
+services:
+  bully:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.bully
+    network_mode: host
+    uts: host
+    mem_limit: 256m
+    restart: unless-stopped
+
+  coordinador:
+    build:
+      context: .
+      dockerfile: coordinador/Dockerfile
+    network_mode: host
+    env_file: .env.t2
+    mem_limit: 768m
+    restart: unless-stopped
+
+  agente:
+    build:
+      context: .
+      dockerfile: agente/Dockerfile
+    network_mode: host
+    env_file: .env.t2
+    mem_limit: 256m
+    depends_on:
+      - coordinador
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    profiles:
+      - broker
+    network_mode: host
+    env_file: .env.t2
+    mem_limit: 768m
+    environment:
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit vm_memory_high_watermark 0.4
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+volumes:
+  rabbit_data:
+    external: true
+    name: taller1sd_rabbit_data
