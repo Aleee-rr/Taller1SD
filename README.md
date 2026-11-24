@@ -248,3 +248,164 @@ legacy/
 - [Python](https://docs.python.org/3/), [Git](https://git-scm.com/doc), `iptables` y `systemd`: herramientas de ejecución, control de versiones y pruebas de partición.
 
 **Seguridad:** no se publican claves privadas SSH ni credenciales. Los archivos de trabajo locales de `logs/`, el entorno `.venv/` y las claves están excluidos mediante `.gitignore`.
+
+---
+
+## 12. Fase 8 — Contenedores y despliegue reproducible
+
+### 12.1. Requisitos previos
+
+Para desplegar el sistema se necesita:
+
+- Tres máquinas virtuales Ubuntu con conectividad entre ellas.
+- Docker Engine y Docker Compose.
+- Tailscale configurado para la comunicación entre nodos.
+- MongoDB instalado y funcionando como replica set `rs-inventario`.
+- Acceso al repositorio de GitHub.
+
+### 12.2. Configuración de variables de entorno
+
+El proyecto incluye el archivo `.env.t2.example` como plantilla de configuración.
+
+Crear el archivo de variables en cada nodo:
+
+```bash
+cp .env.t2.example .env.t2
+nano .env.t2
+```
+
+Configurar las variables de acuerdo con cada máquina:
+
+- `NODE_ID`: identificador del nodo (1, 2 o 3).
+- `LEASE_OWNER`: identificador utilizado para la coordinación.
+- `LEASE_DOC_ID`: identificador del documento de coordinación.
+- `MONGO_URI`: dirección del replica set de MongoDB.
+- `BROKER_HOST`: dirección Tailscale del nodo que ejecuta RabbitMQ.
+- `BROKER_USER` y `BROKER_PASS`: credenciales de RabbitMQ.
+- `RABBITMQ_DEFAULT_USER` y `RABBITMQ_DEFAULT_PASS`: credenciales iniciales del broker.
+- `COORD_URLS`: direcciones de los coordinadores de los tres nodos.
+- `PERIODO_S` y `VENTANA_S`: parámetros de ejecución.
+
+Las direcciones IP deben corresponder a las máquinas del despliegue. Se deben utilizar contraseñas propias y no publicar el archivo `.env.t2`.
+
+### 12.3. Construcción y despliegue
+
+Ubicarse en el directorio del proyecto:
+
+```bash
+cd ~/Taller1SD
+```
+
+En los nodos 1 y 2, construir y levantar los servicios:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+En el nodo 3, donde se ejecuta RabbitMQ, crear previamente el volumen persistente si todavía no existe y levantar los servicios con el perfil del broker:
+
+```bash
+docker volume create taller1sd_rabbit_data
+docker compose build
+docker compose --profile broker up -d
+```
+
+El servicio RabbitMQ utiliza un volumen persistente para conservar sus datos.
+
+### 12.4. Verificación del despliegue
+
+Consultar el estado de los contenedores:
+
+```bash
+docker compose ps
+```
+
+En el nodo 3, incluir el perfil del broker:
+
+```bash
+docker compose --profile broker ps
+```
+
+Consultar los registros de ejecución:
+
+```bash
+docker compose logs --tail 30 bully coordinador agente
+```
+
+Comprobar el estado de la API:
+
+```bash
+curl http://127.0.0.1:8000/v1/health
+```
+
+Consultar el consumo de recursos:
+
+```bash
+docker stats --no-stream
+```
+
+Los contenedores tienen límites de memoria configurados:
+
+- Bully: 128 MB.
+- Coordinador: 512 MB.
+- Agente: 128 MB.
+- RabbitMQ: 512 MB.
+
+### 12.5. Reinicio automático
+
+Los servicios utilizan la política `restart: unless-stopped`, por lo que Docker vuelve a iniciar los contenedores después de reiniciar la máquina virtual, siempre que el servicio Docker esté habilitado.
+
+Para comprobarlo, reiniciar una máquina virtual y consultar nuevamente:
+
+```bash
+docker compose ps
+```
+
+### 12.6. Despliegue reproducible desde GitHub
+
+Para realizar una instalación desde cero en las máquinas de destino:
+
+```bash
+git clone https://github.com/Aleee-rr/Taller1SD.git
+cd Taller1SD
+git checkout taller2
+```
+
+Crear y configurar el archivo de variables:
+
+```bash
+cp .env.t2.example .env.t2
+nano .env.t2
+```
+
+Ajustar las direcciones IP, identificadores y credenciales según la infraestructura utilizada.
+
+Construir y desplegar los servicios en los nodos 1 y 2:
+
+```bash
+docker compose up -d --build
+```
+
+En el nodo 3, crear el volumen persistente y desplegar también RabbitMQ:
+
+```bash
+docker volume create taller1sd_rabbit_data
+docker compose --profile broker up -d --build
+```
+
+Finalmente, verificar los contenedores y la API siguiendo los pasos de la sección anterior.
+
+**Nota:** La prueba de despliegue reproducible requiere que las dependencias externas (Tailscale y el replica set MongoDB) estén configuradas y disponibles. Los servicios del proyecto se construyen a partir de los Dockerfiles incluidos en el repositorio.
+
+### 12.7. Tecnologías y dependencias
+
+- Docker y Docker Compose para la contenerización y el despliegue.
+- Python 3.12.
+- FastAPI y Uvicorn para los servicios API.
+- PyMongo para la comunicación con MongoDB.
+- Pika y RabbitMQ para la mensajería.
+- Pydantic para la validación de datos.
+- Requests y Psutil para solicitudes HTTP y monitoreo de recursos.
+
+Las credenciales, archivos de entorno privados y claves de acceso no se incluyen en el repositorio.
