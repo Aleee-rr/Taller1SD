@@ -2,11 +2,9 @@ import os
 import json
 import time
 import logging
-import threading
 
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
-from pika.exceptions import AMQPError
 
 from common.db import bd
 from common.lease import lease_vigente
@@ -42,13 +40,17 @@ def procesar(ev, cola, reloj):
             "node_id": NODE_ID,
             "ts_inicio": time.time()
         })
+
     except DuplicateKeyError:
         anterior = d.mensajes_procesados.find_one(
             {"message_id": message_id}
         )
 
         if anterior and anterior.get("estado") == "OK":
-            log.info("MENSAJE_DUPLICADO descartado: %s", message_id)
+            log.info(
+                "MENSAJE_DUPLICADO descartado: %s",
+                message_id
+            )
             return
 
     reloj.observe(ev.get("lamport", 0))
@@ -95,7 +97,9 @@ def procesar(ev, cola, reloj):
 
 def correr(reloj):
     """
-    Worker consumidor. Solo consume mientras el nodo sea líder.
+    Worker consumidor.
+    Solo consume mientras el nodo sea líder.
+    Consume allocations y metrics.
     """
 
     while True:
@@ -103,56 +107,96 @@ def correr(reloj):
         canal = None
         buffer = []
         ultimo_mensaje = time.time()
-        tag = None
+        tags = {}
 
         try:
             conexion, canal = conectar()
             canal.basic_qos(prefetch_count=200)
 
-            def recibir(ch, method, properties, body):
+            def recibir(ch, method, properties, body, cola):
                 nonlocal ultimo_mensaje
 
                 try:
                     ev = json.loads(body.decode())
-                    buffer.append((method.delivery_tag, ev))
+
+                    buffer.append((
+                        method.delivery_tag,
+                        ev,
+                        cola
+                    ))
+
                     ultimo_mensaje = time.time()
+
                 except Exception:
-                    log.exception("Mensaje inválido")
+                    log.exception(
+                        "Mensaje inválido en cola %s",
+                        cola
+                    )
+
                     ch.basic_nack(
                         delivery_tag=method.delivery_tag,
                         requeue=False
                     )
 
             while conexion.is_open:
-                if lease_vigente(d):
-                    if tag is None:
-                        tag = canal.basic_consume(
-                            queue="allocations",
-                            on_message_callback=recibir,
-                            auto_ack=False
-                        )
-                        log.info("WORKER activo como líder nodo=%s", NODE_ID)
-                else:
-                    if tag is not None:
-                        canal.basic_cancel(tag)
-                        tag = None
 
-                        for delivery_tag, ev in buffer:
+                if lease_vigente(d):
+
+                    if not tags:
+                        for cola in ("allocations", "metrics"):
+
+                            tags[cola] = canal.basic_consume(
+                                queue=cola,
+                                on_message_callback=lambda ch,
+                                    method,
+                                    properties,
+                                    body,
+                                    q=cola: recibir(
+                                        ch,
+                                        method,
+                                        properties,
+                                        body,
+                                        q
+                                    ),
+                                auto_ack=False
+                            )
+
+                        log.info(
+                            "WORKER activo como líder nodo=%s; "
+                            "colas=%s",
+                            NODE_ID,
+                            list(tags.keys())
+                        )
+
+                else:
+
+                    if tags:
+                        for tag in tags.values():
+                            canal.basic_cancel(tag)
+
+                        tags.clear()
+
+                        for delivery_tag, ev, cola in buffer:
                             canal.basic_nack(
                                 delivery_tag=delivery_tag,
                                 requeue=True
                             )
 
                         buffer.clear()
+
                         log.info("WORKER perdió liderazgo")
 
-                if tag is not None:
-                    conexion.process_data_events(time_limit=0.5)
+                if tags:
+
+                    conexion.process_data_events(
+                        time_limit=0.5
+                    )
 
                     if buffer and (
                         time.time() - ultimo_mensaje >= VENTANA
                         or len(buffer) >= 200
                     ):
+
                         buffer.sort(
                             key=lambda item: (
                                 int(item[1].get("lamport", 0)),
@@ -163,7 +207,8 @@ def correr(reloj):
                         lote = buffer[:]
                         buffer.clear()
 
-                        for delivery_tag, ev in lote:
+                        for delivery_tag, ev, cola in lote:
+
                             try:
                                 if not lease_vigente(d):
                                     canal.basic_nack(
@@ -172,7 +217,7 @@ def correr(reloj):
                                     )
                                     continue
 
-                                procesar(ev, "allocations", reloj)
+                                procesar(ev, cola, reloj)
 
                                 canal.basic_ack(
                                     delivery_tag=delivery_tag
@@ -190,10 +235,14 @@ def correr(reloj):
                                 )
 
                 else:
-                    conexion.process_data_events(time_limit=1)
+                    conexion.process_data_events(
+                        time_limit=1
+                    )
 
         except Exception:
-            log.exception("Worker desconectado; intentando reconectar")
+            log.exception(
+                "Worker desconectado; intentando reconectar"
+            )
 
         finally:
             if conexion is not None and conexion.is_open:
@@ -226,6 +275,7 @@ def vigilar_nodos(reloj, productor):
                         continue
 
                     if ahora - ultima > 15 and nodo not in reportados:
+
                         evento = nuevo_evento(
                             "node_down",
                             NODE_ID,
