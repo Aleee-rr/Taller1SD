@@ -119,13 +119,14 @@ def correr(reloj):
                 try:
                     ev = json.loads(body.decode())
 
+                    if not buffer:
+                        ultimo_mensaje = time.time()
+
                     buffer.append((
                         method.delivery_tag,
                         ev,
                         cola
                     ))
-
-                    ultimo_mensaje = time.time()
 
                 except Exception:
                     log.exception(
