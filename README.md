@@ -409,3 +409,92 @@ Finalmente, verificar los contenedores y la API siguiendo los pasos de la secci�
 - Requests y Psutil para solicitudes HTTP y monitoreo de recursos.
 
 Las credenciales, archivos de entorno privados y claves de acceso no se incluyen en el repositorio.
+
+## 13. Fase 9 — Pruebas de integración y tolerancia a fallos
+
+En esta fase se realizaron pruebas de funcionamiento distribuido, asignación de recursos, replicación de información, compensación de operaciones y disponibilidad del sistema de mensajería.
+
+### 13.1. Verificación de los nodos y coordinación
+
+Se verificó la disponibilidad de los tres nodos mediante el endpoint `/v1/health`. También se comprobó el estado del coordinador y la respuesta de las solicitudes de los agentes.
+
+Las evidencias muestran:
+- Estado de salud de Node1, Node2 y Node3.
+- Identificación del líder mediante el algoritmo Bully.
+- Envío de métricas desde los agentes.
+- Aceptación de solicitudes de asignación.
+
+### 13.2. Flujo de asignación y ejecución de Sagas
+
+Se realizaron solicitudes de asignación de recursos desde diferentes nodos. Posteriormente, se consultó el estado de las Sagas y sus pasos de ejecución.
+
+Se verificaron los estados de reserva, replicación y confirmación, incluyendo solicitudes que finalizaron correctamente.
+
+### 13.3. Replicación de información
+
+Se realizaron consultas sobre los registros de inventario y las asignaciones almacenadas en MongoDB. Se verificó la presencia de información relacionada con las solicitudes procesadas y sus respectivos estados.
+
+### 13.4. Compensación ante fallos
+
+Se probaron escenarios de fallo durante la ejecución de las Sagas:
+
+- Fallo simulado durante el paso 2.
+- Fallo simulado durante el paso 3.
+
+En ambos escenarios se verificó el estado de compensación de la Saga y la liberación de la reserva correspondiente.
+
+### 13.5. Disponibilidad y recuperación de RabbitMQ
+
+Se realizaron pruebas de desconexión y recuperación del broker RabbitMQ.
+
+Se documentaron los siguientes escenarios:
+
+- Detención del servicio RabbitMQ.
+- Reintentos de conexión del coordinador.
+- Respuesta HTTP 503 por indisponibilidad del broker.
+- Recuperación del servicio.
+- Aceptación de nuevas solicitudes después de restablecer la conexión.
+- Procesamiento y descarte de mensajes duplicados.
+
+## 14. Fase 10 — Pruebas y verificación final
+
+### 14.1. Pruebas unitarias
+
+Se ejecutaron las pruebas del módulo de conflictos y la suite general del proyecto mediante `unittest`.
+
+Los resultados documentados muestran:
+- 12 pruebas del módulo de conflictos aprobadas.
+- Una ejecución de la suite general con 16 pruebas aprobadas.
+
+### 14.2. Verificación de la elección del líder
+
+Se observaron los registros de ejecución del algoritmo Bully, incluyendo las etapas de elección, selección del coordinador y confirmación del líder.
+
+### 14.3. Verificación final del proyecto
+
+Se ejecutó el script `scripts/t2_verificar.py`, que comprueba:
+
+1. Ejecución de Bully, coordinador y agente en contenedores.
+2. Reporte reciente de métricas.
+3. Existencia de las tres colas del broker y mensajes confirmados.
+4. Procesamiento de eventos.
+5. Ejecución de una asignación completa.
+6. Registro de asignaciones en la base de datos replicada.
+7. Definición y existencia de Sagas compensadas.
+8. Validación de la configuración Docker Compose.
+
+El resultado obtenido fue:
+
+`RESULTADO: LISTO PARA EL 90 %`
+
+### 14.4. Estado de Git y reproducibilidad
+
+Se verificó el estado del repositorio y la sincronización de la rama `taller2` con su repositorio remoto. También se documentó la construcción de las imágenes Docker en el clon de prueba.
+
+## 15. Organización de evidencias
+
+Las evidencias de ejecución del Taller 2 se encuentran organizadas en el siguiente directorio:
+
+`evidencias/03-ejecucion-taller-2/`
+
+Las capturas documentan la configuración y ejecución de contenedores, las asignaciones distribuidas, las Sagas, la recuperación de RabbitMQ, las pruebas unitarias y la verificación final del proyecto.
