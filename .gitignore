@@ -233,3 +233,6 @@ logs/
 *.log
 id_ed25519*
 id_rsa*
+.env.t2
+!.env.t2.example
+prueba-repro/

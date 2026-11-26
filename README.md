@@ -248,3 +248,253 @@ legacy/
 - [Python](https://docs.python.org/3/), [Git](https://git-scm.com/doc), `iptables` y `systemd`: herramientas de ejecución, control de versiones y pruebas de partición.
 
 **Seguridad:** no se publican claves privadas SSH ni credenciales. Los archivos de trabajo locales de `logs/`, el entorno `.venv/` y las claves están excluidos mediante `.gitignore`.
+
+---
+
+## 12. Fase 8 — Contenedores y despliegue reproducible
+
+### 12.1. Requisitos previos
+
+Para desplegar el sistema se necesita:
+
+- Tres máquinas virtuales Ubuntu con conectividad entre ellas.
+- Docker Engine y Docker Compose.
+- Tailscale configurado para la comunicación entre nodos.
+- MongoDB instalado y funcionando como replica set `rs-inventario`.
+- Acceso al repositorio de GitHub.
+
+### 12.2. Configuración de variables de entorno
+
+El proyecto incluye el archivo `.env.t2.example` como plantilla de configuración.
+
+Crear el archivo de variables en cada nodo:
+
+```bash
+cp .env.t2.example .env.t2
+nano .env.t2
+```
+
+Configurar las variables de acuerdo con cada máquina:
+
+- `NODE_ID`: identificador del nodo (1, 2 o 3).
+- `LEASE_OWNER`: identificador utilizado para la coordinación.
+- `LEASE_DOC_ID`: identificador del documento de coordinación.
+- `MONGO_URI`: dirección del replica set de MongoDB.
+- `BROKER_HOST`: dirección Tailscale del nodo que ejecuta RabbitMQ.
+- `BROKER_USER` y `BROKER_PASS`: credenciales de RabbitMQ.
+- `RABBITMQ_DEFAULT_USER` y `RABBITMQ_DEFAULT_PASS`: credenciales iniciales del broker.
+- `COORD_URLS`: direcciones de los coordinadores de los tres nodos.
+- `PERIODO_S` y `VENTANA_S`: parámetros de ejecución.
+
+Las direcciones IP deben corresponder a las máquinas del despliegue. Se deben utilizar contraseñas propias y no publicar el archivo `.env.t2`.
+
+### 12.3. Construcción y despliegue
+
+Ubicarse en el directorio del proyecto:
+
+```bash
+cd ~/Taller1SD
+```
+
+En los nodos 1 y 2, construir y levantar los servicios:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+En el nodo 3, donde se ejecuta RabbitMQ, crear previamente el volumen persistente si todavía no existe y levantar los servicios con el perfil del broker:
+
+```bash
+docker volume create taller1sd_rabbit_data
+docker compose build
+docker compose --profile broker up -d
+```
+
+El servicio RabbitMQ utiliza un volumen persistente para conservar sus datos.
+
+### 12.4. Verificación del despliegue
+
+Consultar el estado de los contenedores:
+
+```bash
+docker compose ps
+```
+
+En el nodo 3, incluir el perfil del broker:
+
+```bash
+docker compose --profile broker ps
+```
+
+Consultar los registros de ejecución:
+
+```bash
+docker compose logs --tail 30 bully coordinador agente
+```
+
+Comprobar el estado de la API:
+
+```bash
+curl http://127.0.0.1:8000/v1/health
+```
+
+Consultar el consumo de recursos:
+
+```bash
+docker stats --no-stream
+```
+
+Los contenedores tienen límites de memoria configurados:
+
+- Bully: 128 MB.
+- Coordinador: 512 MB.
+- Agente: 128 MB.
+- RabbitMQ: 512 MB.
+
+### 12.5. Reinicio automático
+
+Los servicios utilizan la política `restart: unless-stopped`, por lo que Docker vuelve a iniciar los contenedores después de reiniciar la máquina virtual, siempre que el servicio Docker esté habilitado.
+
+Para comprobarlo, reiniciar una máquina virtual y consultar nuevamente:
+
+```bash
+docker compose ps
+```
+
+### 12.6. Despliegue reproducible desde GitHub
+
+Para realizar una instalación desde cero en las máquinas de destino:
+
+```bash
+git clone https://github.com/Aleee-rr/Taller1SD.git
+cd Taller1SD
+git checkout taller2
+```
+
+Crear y configurar el archivo de variables:
+
+```bash
+cp .env.t2.example .env.t2
+nano .env.t2
+```
+
+Ajustar las direcciones IP, identificadores y credenciales según la infraestructura utilizada.
+
+Construir y desplegar los servicios en los nodos 1 y 2:
+
+```bash
+docker compose up -d --build
+```
+
+En el nodo 3, crear el volumen persistente y desplegar también RabbitMQ:
+
+```bash
+docker volume create taller1sd_rabbit_data
+docker compose --profile broker up -d --build
+```
+
+Finalmente, verificar los contenedores y la API siguiendo los pasos de la sección anterior.
+
+**Nota:** La prueba de despliegue reproducible requiere que las dependencias externas (Tailscale y el replica set MongoDB) estén configuradas y disponibles. Los servicios del proyecto se construyen a partir de los Dockerfiles incluidos en el repositorio.
+
+### 12.7. Tecnologías y dependencias
+
+- Docker y Docker Compose para la contenerización y el despliegue.
+- Python 3.12.
+- FastAPI y Uvicorn para los servicios API.
+- PyMongo para la comunicación con MongoDB.
+- Pika y RabbitMQ para la mensajería.
+- Pydantic para la validación de datos.
+- Requests y Psutil para solicitudes HTTP y monitoreo de recursos.
+
+Las credenciales, archivos de entorno privados y claves de acceso no se incluyen en el repositorio.
+
+## 13. Fase 9 — Pruebas de integración y tolerancia a fallos
+
+En esta fase se realizaron pruebas de funcionamiento distribuido, asignación de recursos, replicación de información, compensación de operaciones y disponibilidad del sistema de mensajería.
+
+### 13.1. Verificación de los nodos y coordinación
+
+Se verificó la disponibilidad de los tres nodos mediante el endpoint `/v1/health`. También se comprobó el estado del coordinador y la respuesta de las solicitudes de los agentes.
+
+Las evidencias muestran:
+- Estado de salud de Node1, Node2 y Node3.
+- Identificación del líder mediante el algoritmo Bully.
+- Envío de métricas desde los agentes.
+- Aceptación de solicitudes de asignación.
+
+### 13.2. Flujo de asignación y ejecución de Sagas
+
+Se realizaron solicitudes de asignación de recursos desde diferentes nodos. Posteriormente, se consultó el estado de las Sagas y sus pasos de ejecución.
+
+Se verificaron los estados de reserva, replicación y confirmación, incluyendo solicitudes que finalizaron correctamente.
+
+### 13.3. Replicación de información
+
+Se realizaron consultas sobre los registros de inventario y las asignaciones almacenadas en MongoDB. Se verificó la presencia de información relacionada con las solicitudes procesadas y sus respectivos estados.
+
+### 13.4. Compensación ante fallos
+
+Se probaron escenarios de fallo durante la ejecución de las Sagas:
+
+- Fallo simulado durante el paso 2.
+- Fallo simulado durante el paso 3.
+
+En ambos escenarios se verificó el estado de compensación de la Saga y la liberación de la reserva correspondiente.
+
+### 13.5. Disponibilidad y recuperación de RabbitMQ
+
+Se realizaron pruebas de desconexión y recuperación del broker RabbitMQ.
+
+Se documentaron los siguientes escenarios:
+
+- Detención del servicio RabbitMQ.
+- Reintentos de conexión del coordinador.
+- Respuesta HTTP 503 por indisponibilidad del broker.
+- Recuperación del servicio.
+- Aceptación de nuevas solicitudes después de restablecer la conexión.
+- Procesamiento y descarte de mensajes duplicados.
+
+## 14. Fase 10 — Pruebas y verificación final
+
+### 14.1. Pruebas unitarias
+
+Se ejecutaron las pruebas del módulo de conflictos y la suite general del proyecto mediante `unittest`.
+
+Los resultados documentados muestran:
+- 12 pruebas del módulo de conflictos aprobadas.
+- Una ejecución de la suite general con 16 pruebas aprobadas.
+
+### 14.2. Verificación de la elección del líder
+
+Se observaron los registros de ejecución del algoritmo Bully, incluyendo las etapas de elección, selección del coordinador y confirmación del líder.
+
+### 14.3. Verificación final del proyecto
+
+Se ejecutó el script `scripts/t2_verificar.py`, que comprueba:
+
+1. Ejecución de Bully, coordinador y agente en contenedores.
+2. Reporte reciente de métricas.
+3. Existencia de las tres colas del broker y mensajes confirmados.
+4. Procesamiento de eventos.
+5. Ejecución de una asignación completa.
+6. Registro de asignaciones en la base de datos replicada.
+7. Definición y existencia de Sagas compensadas.
+8. Validación de la configuración Docker Compose.
+
+El resultado obtenido fue:
+
+`RESULTADO: LISTO PARA EL 90 %`
+
+### 14.4. Estado de Git y reproducibilidad
+
+Se verificó el estado del repositorio y la sincronización de la rama `taller2` con su repositorio remoto. También se documentó la construcción de las imágenes Docker en el clon de prueba.
+
+## 15. Organización de evidencias
+
+Las evidencias de ejecución del Taller 2 se encuentran organizadas en el siguiente directorio:
+
+`evidencias/03-ejecucion-taller-2/`
+
+Las capturas documentan la configuración y ejecución de contenedores, las asignaciones distribuidas, las Sagas, la recuperación de RabbitMQ, las pruebas unitarias y la verificación final del proyecto.

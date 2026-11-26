@@ -1,0 +1,287 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Coordinador de Recursos Distribuidos",
+        "description": "API REST para la gesti\u00f3n de asignaciones y m\u00e9tricas",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/v1/health": {
+            "get": {
+                "summary": "Health",
+                "operationId": "health_v1_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/metrics": {
+            "post": {
+                "summary": "Recibir Metricas",
+                "operationId": "recibir_metricas_v1_metrics_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Metricas"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/assignments": {
+            "post": {
+                "summary": "Crear Asignacion",
+                "operationId": "crear_asignacion_v1_assignments_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Solicitud"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/sagas/{saga_id}": {
+            "get": {
+                "summary": "Consultar Saga",
+                "operationId": "consultar_saga_v1_sagas__saga_id__get",
+                "parameters": [
+                    {
+                        "name": "saga_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Saga Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "Metricas": {
+                "properties": {
+                    "node_id": {
+                        "type": "integer",
+                        "title": "Node Id"
+                    },
+                    "lamport": {
+                        "type": "integer",
+                        "minimum": 0.0,
+                        "title": "Lamport"
+                    },
+                    "cpu_pct": {
+                        "type": "number",
+                        "maximum": 100.0,
+                        "minimum": 0.0,
+                        "title": "Cpu Pct"
+                    },
+                    "mem_mb": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "title": "Mem Mb"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "node_id",
+                    "lamport",
+                    "cpu_pct",
+                    "mem_mb"
+                ],
+                "title": "Metricas"
+            },
+            "Solicitud": {
+                "properties": {
+                    "node_id": {
+                        "type": "integer",
+                        "title": "Node Id"
+                    },
+                    "lamport": {
+                        "type": "integer",
+                        "minimum": 0.0,
+                        "title": "Lamport"
+                    },
+                    "recurso": {
+                        "type": "string",
+                        "title": "Recurso",
+                        "default": "memoria_mb"
+                    },
+                    "cantidad": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0.0,
+                        "title": "Cantidad",
+                        "default": 128
+                    },
+                    "falla_en_paso": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Falla En Paso"
+                    },
+                    "lote": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Lote"
+                    },
+                    "message_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Message Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "node_id",
+                    "lamport"
+                ],
+                "title": "Solicitud"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    },
+                    "input": {
+                        "title": "Input"
+                    },
+                    "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        }
+    }
+}
